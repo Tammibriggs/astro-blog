@@ -1,0 +1,37 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const authors = await getCollection('authors');
+  return authors.map((author) => ({
+    params: { id: author.id },
+    props: author,
+  }));
+}
+
+const author = Astro.props;
+const authorPosts = await getCollection('blog', ({data}) => data.author.id === author.id);
+---
+<BaseLayout title={author.data.name}>
+  <div>
+    <h1>{author.data.name}</h1>
+    <p>{author.data.bio}</p>
+    <hr />
+    <ul>
+      {
+        authorPosts.map((post) => (
+          <li>
+            <a href={`/${post.slug}`}>{post.data.title}</a>
+            <p>
+              <time datetime={post.data.publishDate.toISOString()}>
+                {post.data.publishDate.toDateString()}
+              </time>
+            </p>
+            <p>{post.data.description}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</BaseLayout>
